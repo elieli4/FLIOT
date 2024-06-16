@@ -40,12 +40,12 @@ def compute_sums():
     s1_second_sum = sums['second_sum']
     
     # Initialize 2D arrays for storing sums
-    sums_first = np.zeros((d + 1, n + 1))
-    sums_second = np.zeros((d + 1, n + 1))
+    sums_first = np.zeros((d, n))
+    sums_second = np.zeros((d, n))
 
     print("Computing sums:")  # Debug print
 
-    for i in range(2, d + 1):
+    for i in range(1, d + 1):
         for j in range(1, n + 1):
             print(f"Checking i={i}, j={j}")  # Debug print
             key_1j = f"(1, {j})"
@@ -55,8 +55,8 @@ def compute_sums():
                 m_ij_first, m_ij_second = received_values[key_ij]
                 s_ij_first = s1_first_sum - m_1j_first + m_ij_first
                 s_ij_second = s1_second_sum - m_1j_second + m_ij_second
-                sums_first[i, j] = s_ij_first
-                sums_second[i, j] = s_ij_second
+                sums_first[i-1, j-1] = s_ij_first
+                sums_second[i-1, j-1] = s_ij_second
                 print(f"s_{i},{j}_first: {s_ij_first}, s_{i},{j}_second: {s_ij_second}")  # Debug print
 
     # Send the computed sums to the main server

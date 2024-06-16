@@ -1,5 +1,7 @@
 import socket
 
+k=1
+
 def send_message(client_id, num1, num2, host='127.0.0.1', port=12345):
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     client.connect((host, port))
@@ -17,6 +19,7 @@ if __name__ == "__main__":
     j = sys.argv[2]
     num1 = sys.argv[3]
     num2 = sys.argv[4]
+    num2 = k*num1
     client_id = f"({i}, {j})"
     
     send_message(client_id, num1, num2)

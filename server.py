@@ -2,6 +2,7 @@ import socket
 import pickle
 import numpy as np
 import csv
+from collections import Counter
 
 d = 2  # Adjust this as needed
 n = 3  # Adjust this as needed
@@ -46,20 +47,31 @@ def receive_sums_from_server(host='0.0.0.0', port=12346):
         server.close()
 
 def computeMs(ks, xs, kprimes, ys):
-    ms = {}
+    ms = np.zeros((d,n))
     k = 1 #change this value
     k1 = sum(ks[1])
     k1prime = sum(kprimes[1])
     for j in range(1,n+1):
         for i in range(1,d+1):
-            m = xs[i,j]-k1+ks[1,j]-ks[i,j]
-            y_test = k1prime-kprimes[1,j]+kprimes[i,j]+k*m
-            if ys[i,j] == y_test:
-                ms["f{i},{j}"]=m
+            m = xs[i-1,j-1]-k1+ks[1-1,j-1]-ks[i-1,j-1]
+            y_test = k1prime-kprimes[1-1,j-1]+kprimes[i-1,j-1]+k*m
+            if ys[i-1,j-1] == y_test:
+                ms[i-1,j-1]=m
             else:
                 print("checksum not verified")
                 return -1
     return ms
+
+def findHonestSum(ms):
+    h = [None] * n
+    print(ms)
+    for j in range(1,n+1):
+        count=Counter(ms[:,j-1])
+        mce, _ = count.most_common(1)[0]
+        index = np.where(ms[:,j-1]==mce)[0][0]
+        print(ms[:,j-1])
+        h[j-1]=index
+    return h
 
 if __name__ == "__main__":
     xs, ys = receive_sums_from_server()
@@ -68,4 +80,6 @@ if __name__ == "__main__":
     ks = np.genfromtxt("ks.csv",delimiter=",")
     kprimes = np.genfromtxt("kprimes.csv", delimiter=",")
     ms = computeMs(ks, xs, kprimes, ys)
+    h = findHonestSum(ms)
+    print(h)
     print("ok")
