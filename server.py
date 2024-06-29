@@ -4,7 +4,7 @@ import numpy as np
 import csv
 from collections import Counter
 
-d = 3  # Adjust this as needed
+d = 5  # Adjust this as needed
 n = 4  # Adjust this as needed
 total_clients = d * n
 
@@ -87,6 +87,17 @@ def findHonestSum(ms):
         e=h
     return y,e
 
+def findCorruptions(ms):
+    c=np.zeros((d,n))
+    for j in range(0,n):
+        count=Counter(ms[:,j])
+        mce, _ = count.most_common(1)[0]
+        indices = np.where(ms[:,j]!=mce)[0]
+        for ind in indices:
+            c[ind,j]=1
+    return c
+
+
 def send_h(h, host='127.0.0.1', port=12347):
     try:
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -103,6 +114,60 @@ def send_h(h, host='127.0.0.1', port=12347):
     finally:
         client.close()
 
+def receiveHonestSums(host='0.0.0.0', port=12346):
+    try:
+        server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        server.bind((host, port))
+        server.listen(1)  # Listen for one connection
+        print(f"Main server listening on {host}:{port}")
+
+        client_socket, addr = server.accept()
+        print(f"Accepted connection from {addr}")
+
+        # Receive serialized new arrays
+        new_arrays_serialized = b''
+        while True:
+            data = client_socket.recv(4096)
+            if not data:
+                break
+            new_arrays_serialized += data
+
+        # Deserialize new arrays
+        new_sums_first, new_sums_second = pickle.loads(new_arrays_serialized)
+
+        # Convert lists to numpy arrays
+        new_sums_first = np.array(new_sums_first)
+        new_sums_second = np.array(new_sums_second)
+
+        print("Received new sums:")
+        print("New Sum First:")
+        print(new_sums_first)
+        print("New Sum Second:")
+        print(new_sums_second)
+        return new_sums_first, new_sums_second
+    except Exception as e:
+        print(f"Error receiving new sums: {e}")
+    finally:
+        client_socket.close()
+        server.close()
+
+def testingChecksum(sumh, sumy, h, kprimes):
+    kprime = 0
+    k = 1
+    for i in range(0,n):
+        kprime += kprimes[h[i],i]
+    if (sumh*k+kprime)==sumy:
+        return True
+    return False
+
+
+def decryptHonestSum(sumx, h, ks):
+    k = 0
+    for i in range(0,n):
+        k += ks[h[i], i]
+    sumh = sumx-k
+    return sumh
+
 if __name__ == "__main__":
     xs, ys = receive_sums_from_server()
     #ks = np.array(list(csv.reader(open("ks.csv"))))
@@ -111,6 +176,14 @@ if __name__ == "__main__":
     kprimes = np.genfromtxt("kprimes.csv", delimiter=",")
     ms = computeMs(ks, xs, kprimes, ys)
     y,e = findHonestSum(ms)
+    c = findCorruptions(ms)
     print(y,e)
+    print(c)
     send_h(e)
-    print("ok")
+    sumx,sumy = receiveHonestSums()
+    sumh = decryptHonestSum(sumx, e, ks)
+    if testingChecksum(sumx, sumy, e, kprimes):
+        print("FINAL HONEST SUM: ", sumh)
+    else:
+        print("checksum not verified")
+    print("finished")
