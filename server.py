@@ -3,9 +3,19 @@ import pickle
 import numpy as np
 import csv
 from collections import Counter
+import sys
 
-d = 5  # Adjust this as needed
-n = 4  # Adjust this as needed
+
+import sys
+if len(sys.argv) < 3:
+    print("Usage: python server.py <i> <j>")
+    sys.exit(1)
+
+d = int(sys.argv[1])
+n = int(sys.argv[2])
+
+
+
 total_clients = d * n
 
 # Function to handle receiving sums from the original server

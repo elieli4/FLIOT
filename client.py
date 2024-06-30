@@ -11,14 +11,13 @@ def send_message(client_id, num1, num2, host='127.0.0.1', port=12345):
 
 if __name__ == "__main__":
     import sys
-    if len(sys.argv) < 5:
-        print("Usage: python client.py <i> <j> <num1> <num2>")
+    if len(sys.argv) < 4:
+        print("Usage: python client.py <i> <j> <num1>")
         sys.exit(1)
     
     i = sys.argv[1]
     j = sys.argv[2]
     num1 = sys.argv[3]
-    num2 = sys.argv[4]
     num2 = k*num1
     client_id = f"({i}, {j})"
     

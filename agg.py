@@ -10,8 +10,16 @@ received_values = {}
 # Counter to track the number of received messages
 received_count = 0
 # Total number of expected clients
-d = 3  # Adjust this as needed
-n = 4  # Adjust this as needed
+
+import sys
+if len(sys.argv) < 3:
+    print("Usage: python agg.py <i> <j>")
+    sys.exit(1)
+
+d = int(sys.argv[1])
+n = int(sys.argv[2])
+
+
 total_clients = d * n
 
 # Lock for thread-safe updates
@@ -102,6 +110,7 @@ def receive_h(host='0.0.0.0', port=12347):
     try:
         server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         server.bind((host, port))
+        server.settimeout(2)
         server.listen(1)  # Listen for one connection
         print(f"Original server listening for h on {host}:{port}")
 
@@ -120,11 +129,41 @@ def receive_h(host='0.0.0.0', port=12347):
         h = pickle.loads(h_serialized)
         print("Received array h from the main server.")
         return h
+    except socket.timeout:
+        print("timeout")
     except Exception as e:
         print(f"Error receiving h: {e}")
     finally:
-        client_socket.close()
+        if client_socket:
+            client_socket.close()
         server.close()
+        computeHonestSum(h)
+
+def computeHonestSum(h):
+    sumx = 0
+    sumy = 0
+    for j in range(0,n):
+        key = f"({h[j]}, {j})"
+        x, y = received_values[key]
+        sumx += x
+        sumy += y
+    sendHonestSum(sumx, sumy)
+
+def sendHonestSum(sumx, sumy, host='127.0.0.1', port=12346):
+    try:
+        client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        client.connect((host, port))
+        
+        # Serialize the new sums arrays using pickle
+        new_sums_serialized = pickle.dumps((sumx, sumy))
+        client.sendall(new_sums_serialized)
+        
+        print("New arrays sent to main server.")  # Debug print
+        
+    except Exception as e:
+        print(f"Error sending new arrays to main server: {e}")
+    finally:
+        client.close() 
 
 # Main server function
 def start_server(host='0.0.0.0', port=12345):
