@@ -59,8 +59,8 @@ def receive_sums_from_server(host='0.0.0.0', port=12346):
 def computeMs(ks, xs, kprimes, ys):
     ms = np.zeros((d,n))
     k = 1 #change this value
-    k1 = sum(ks[0])
-    k1prime = sum(kprimes[0])
+    k1 = sum(ks[0,:-1])
+    k1prime = sum(kprimes[0,:-1])
     for j in range(0,n):
         for i in range(0,d):
             m = xs[i,j]-k1+ks[0,j]-ks[i,j]
@@ -69,6 +69,8 @@ def computeMs(ks, xs, kprimes, ys):
                 ms[i,j]=m
             else:
                 print("checksum not verified")
+                print(y_test, ys[i,j])
+                print(m, xs[i,j], k1, ks[0,j], ks[i,j])
                 return -1
     return ms
 
@@ -189,6 +191,9 @@ if __name__ == "__main__":
     c = findCorruptions(ms)
     print(y,e)
     print(c)
+    if y:
+        print("success")
+        sys.exit(1)
     send_h(e)
     sumx,sumy = receiveHonestSums()
     sumh = decryptHonestSum(sumx, e, ks)

@@ -1,4 +1,5 @@
 import socket
+import numpy as np
 
 k=1
 
@@ -17,8 +18,14 @@ if __name__ == "__main__":
     
     i = sys.argv[1]
     j = sys.argv[2]
-    num1 = sys.argv[3]
+    num1 = int(sys.argv[3])
     num2 = k*num1
     client_id = f"({i}, {j})"
+
+    ks = np.genfromtxt("ks.csv",delimiter=",")
+    kprimes = np.genfromtxt("kprimes.csv", delimiter=",")
+
+    enc1 = int(num1 + ks[int(i),int(j)])
+    enc2 = int(num2 + kprimes[int(i),int(j)])
     
-    send_message(client_id, num1, num2)
+    send_message(client_id, enc1, enc2)
