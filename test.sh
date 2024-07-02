@@ -3,7 +3,7 @@
 
 rm ks.csv
 rm kprimes.csv
-k=3
+k=$1
 n=$k
 d=5
 
@@ -18,7 +18,7 @@ for ((i=0;i<d;i++)); do
 	echo "" >> kprimes.csv
 done
 
-gnome-terminal -- bash -c "python server.py $d $n; sleep 30; exit"
+gnome-terminal -- bash -c "python server.py $d $n; sleep 1; exit"
 gnome-terminal -- bash -c "python agg.py $d $n; sleep 1; exit"&
 TERMINAL_PID=$!
 sleep 1
@@ -26,7 +26,6 @@ for ((j=0;j<n;j++)); do
 	g=$(( RANDOM % 1001 ))
 	for ((i=0;i<d;i++)); do
 		python client.py $i $j $g
-		sleep 1
+		sleep 0.1
 	done
 done
-sleep 20

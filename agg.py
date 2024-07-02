@@ -2,6 +2,7 @@ import socket
 import threading
 import pickle
 import numpy as np
+import time
 
 # Dictionary to hold sums of the first and second numbers from clients with ID (1, j)
 sums = {'first_sum': 0, 'second_sum': 0}
@@ -54,6 +55,7 @@ def compute_sums():
 
     print("Computing sums:")  # Debug print
 
+    start = time.time()
     for i in range(0, d):
         for j in range(0, n):
             print(f"Checking i={i}, j={j}")  # Debug print
@@ -67,7 +69,11 @@ def compute_sums():
                 sums_first[i, j] = s_ij_first
                 sums_second[i, j] = s_ij_second
                 print(f"s_{i},{j}_first: {s_ij_first}, s_{i},{j}_second: {s_ij_second}")  # Debug print
-
+    end=time.time()
+    ti = str(end-start)+ "\n"
+    file = open("aggTimes.csv", "a")
+    file.write(ti)
+    file.close
     # Send the computed sums to the main server
     send_sums_to_main_server(sums_first, sums_second)
 
@@ -131,6 +137,10 @@ def receive_h(host='0.0.0.0', port=12347):
         return h
     except socket.timeout:
         print("timeout")
+        if client_socket:
+            client_socket.close()
+        server.close()
+        sys.exit(1)
     except Exception as e:
         print(f"Error receiving h: {e}")
     finally:
@@ -168,6 +178,7 @@ def sendHonestSum(sumx, sumy, host='127.0.0.1', port=12346):
 # Main server function
 def start_server(host='0.0.0.0', port=12345):
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     server.bind((host, port))
     server.listen(total_clients)  # Adjust the backlog as needed
     print(f"Server listening on {host}:{port}")

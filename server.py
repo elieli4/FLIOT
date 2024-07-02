@@ -4,9 +4,8 @@ import numpy as np
 import csv
 from collections import Counter
 import sys
+import time
 
-
-import sys
 if len(sys.argv) < 3:
     print("Usage: python server.py <i> <j>")
     sys.exit(1)
@@ -61,6 +60,7 @@ def computeMs(ks, xs, kprimes, ys):
     k = 1 #change this value
     k1 = sum(ks[0,:-1])
     k1prime = sum(kprimes[0,:-1])
+    start = time.time()
     for j in range(0,n):
         for i in range(0,d):
             m = xs[i,j]-k1+ks[0,j]-ks[i,j]
@@ -72,11 +72,17 @@ def computeMs(ks, xs, kprimes, ys):
                 print(y_test, ys[i,j])
                 print(m, xs[i,j], k1, ks[0,j], ks[i,j])
                 return -1
+    end=time.time()
+    ti = str(end-start) +","
+    file = open("bench.csv", "a")
+    file.write(ti)
+    file.close()
     return ms
 
 def findHonestSum(ms):
     h = [None] * n
     print(ms)
+    start =time.time()
     for j in range(0,n):
         count=Counter(ms[:,j])
         mce, _ = count.most_common(1)[0]
@@ -97,16 +103,27 @@ def findHonestSum(ms):
     else:
         y=None
         e=h
+    end=time.time()
+    ti = str(end-start) +","
+    file = open("bench.csv", "a")
+    file.write(ti)                      
+    file.close()
     return y,e
 
 def findCorruptions(ms):
     c=np.zeros((d,n))
+    start = time.time()
     for j in range(0,n):
         count=Counter(ms[:,j])
         mce, _ = count.most_common(1)[0]
         indices = np.where(ms[:,j]!=mce)[0]
         for ind in indices:
             c[ind,j]=1
+    end=time.time()
+    ti = str(end-start) +","
+    file = open("bench.csv", "a")
+    file.write(ti)                      
+    file.close()
     return c
 
 
