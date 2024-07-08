@@ -12,7 +12,7 @@ if len(sys.argv) < 3:
 
 d = int(sys.argv[1])
 n = int(sys.argv[2])
-
+p=1000004123
 
 
 total_clients = d * n
@@ -63,8 +63,8 @@ def computeMs(ks, xs, kprimes, ys):
     start = time.time()
     for j in range(0,n):
         for i in range(0,d):
-            m = xs[i,j]-k1+ks[0,j]-ks[i,j]
-            y_test = k1prime-kprimes[0,j]+kprimes[i,j]+k*m
+            m = (xs[i,j]-k1+ks[0,j]-ks[i,j])%p
+            y_test = (k1prime-kprimes[0,j]+kprimes[i,j]+k*m)%p
             if ys[i,j] == y_test:
                 ms[i,j]=m
             else:

@@ -70,7 +70,7 @@ def compute_sums():
                 sums_second[i, j] = s_ij_second
                 print(f"s_{i},{j}_first: {s_ij_first}, s_{i},{j}_second: {s_ij_second}")  # Debug print
     end=time.time()
-    ti = str(end-start)+ "\n"
+    ti = str(end-start)
     file = open("aggTimes.csv", "a")
     file.write(ti)
     file.close

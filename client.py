@@ -2,6 +2,7 @@ import socket
 import numpy as np
 
 k=1
+p=1000004123
 
 def send_message(client_id, num1, num2, host='127.0.0.1', port=12345):
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -25,7 +26,7 @@ if __name__ == "__main__":
     ks = np.genfromtxt("ks.csv",delimiter=",")
     kprimes = np.genfromtxt("kprimes.csv", delimiter=",")
 
-    enc1 = int(num1 + ks[int(i),int(j)])
-    enc2 = int(num2 + kprimes[int(i),int(j)])
+    enc1 = int(num1 + ks[int(i),int(j)])%p
+    enc2 = int(num2 + kprimes[int(i),int(j)])%p
     
     send_message(client_id, enc1, enc2)
