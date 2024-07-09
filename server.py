@@ -12,8 +12,7 @@ if len(sys.argv) < 3:
 
 d = int(sys.argv[1])
 n = int(sys.argv[2])
-p=1000004123
-
+p=33554432039
 
 total_clients = d * n
 
@@ -58,8 +57,8 @@ def receive_sums_from_server(host='0.0.0.0', port=12346):
 def computeMs(ks, xs, kprimes, ys):
     ms = np.zeros((d,n))
     k = 1 #change this value
-    k1 = sum(ks[0,:-1])
-    k1prime = sum(kprimes[0,:-1])
+    k1 = sum(ks[0,:])
+    k1prime = sum(kprimes[0,:])
     start = time.time()
     for j in range(0,n):
         for i in range(0,d):
@@ -201,8 +200,8 @@ if __name__ == "__main__":
     xs, ys = receive_sums_from_server()
     #ks = np.array(list(csv.reader(open("ks.csv"))))
     #kprimes = np.array(list(csv.reader(open("kprimes.csv"))))
-    ks = np.genfromtxt("ks.csv",delimiter=",")
-    kprimes = np.genfromtxt("kprimes.csv", delimiter=",")
+    ks = np.transpose(np.genfromtxt("ks.csv", delimiter=","))
+    kprimes = np.transpose(np.genfromtxt("kprimes.csv", delimiter=","))
     ms = computeMs(ks, xs, kprimes, ys)
     y,e = findHonestSum(ms)
     c = findCorruptions(ms)

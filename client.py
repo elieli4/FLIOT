@@ -2,7 +2,7 @@ import socket
 import numpy as np
 
 k=1
-p=1000004123
+p=33554432039
 
 def send_message(client_id, num1, num2, host='127.0.0.1', port=12345):
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

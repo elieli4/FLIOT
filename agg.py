@@ -58,7 +58,7 @@ def compute_sums():
     start = time.time()
     for i in range(0, d):
         for j in range(0, n):
-            print(f"Checking i={i}, j={j}")  # Debug print
+#            print(f"Checking i={i}, j={j}")  # Debug print
             key_1j = f"(0, {j})"
             key_ij = f"({i}, {j})"
             if key_1j in received_values and key_ij in received_values:
@@ -68,12 +68,13 @@ def compute_sums():
                 s_ij_second = s1_second_sum - m_1j_second + m_ij_second
                 sums_first[i, j] = s_ij_first
                 sums_second[i, j] = s_ij_second
-                print(f"s_{i},{j}_first: {s_ij_first}, s_{i},{j}_second: {s_ij_second}")  # Debug print
+ #               print(f"s_{i},{j}_first: {s_ij_first}, s_{i},{j}_second: {s_ij_second}")  # Debug print
     end=time.time()
-    ti = str(end-start)
+    ti = str(end-start) +","
     file = open("aggTimes.csv", "a")
     file.write(ti)
     file.close
+    print(ti)
     # Send the computed sums to the main server
     send_sums_to_main_server(sums_first, sums_second)
 
@@ -189,5 +190,19 @@ def start_server(host='0.0.0.0', port=12345):
         client_handler = threading.Thread(target=handle_client, args=(client_socket,))
         client_handler.start()
 
+def get_values():
+    xs = np.transpose(np.genfromtxt("inputs.csv", delimiter=","))
+    ys = np.transpose(np.genfromtxt("checksums.csv", delimiter=","))
+    for i in range(d):
+        for j in range(n):
+            client_id = f"({i}, {j})"
+            num1 = xs[i,j]
+            num2 = ys[i,j]
+            received_values[client_id] = (num1, num2)
+    sums['first_sum'] = sum(xs[0,:])
+    sums['second_sum'] = sum(ys[0,:])
+    compute_sums()
+
 if __name__ == "__main__":
-    start_server()
+   # start_server()
+    get_values()
