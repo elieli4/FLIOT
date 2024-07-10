@@ -6,18 +6,32 @@ from collections import Counter
 import sys
 import time
 
-if len(sys.argv) < 3:
-    print("Usage: python server.py <i> <j>")
+if len(sys.argv) < 4:
+    print("Usage: python server.py <i> <j> <byte>")
     sys.exit(1)
 
 d = int(sys.argv[1])
 n = int(sys.argv[2])
-p=33554432039
+byte= int(sys.argv[3])
+rcv=0
+snt=0
+
+if byte ==1:
+    p=256019
+elif byte ==2:
+    p=65536043
+elif byte ==3:
+    p=16777216019
+else: #byte==4
+    p=429496729609
+
+#p=33554432039
 
 total_clients = d * n
 
 # Function to handle receiving sums from the original server
 def receive_sums_from_server(host='0.0.0.0', port=12346):
+    global rcv
     try:
         server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         server.bind((host, port))
@@ -34,7 +48,7 @@ def receive_sums_from_server(host='0.0.0.0', port=12346):
             if not data:
                 break
             sums_serialized += data
-
+            rcv += len(data)
         # Deserialize sums
         sums_first, sums_second = pickle.loads(sums_serialized)
 
@@ -60,8 +74,10 @@ def computeMs(ks, xs, kprimes, ys):
     k1 = sum(ks[0,:])
     k1prime = sum(kprimes[0,:])
     start = time.time()
-    for j in range(0,n):
-        for i in range(0,d):
+    for i in range(0,d):
+        if i==0:
+            stt=time.time()
+        for j in range(0,n):
             m = (xs[i,j]-k1+ks[0,j]-ks[i,j])%p
             y_test = (k1prime-kprimes[0,j]+kprimes[i,j]+k*m)%p
             if ys[i,j] == y_test:
@@ -71,6 +87,12 @@ def computeMs(ks, xs, kprimes, ys):
                 print(y_test, ys[i,j])
                 print(m, xs[i,j], k1, ks[0,j], ks[i,j])
                 return -1
+        if i==0:
+            enn = time.time()
+            ff = str(enn-stt) + "\n"
+            file = open("singleBench.csv", "a")
+            file.write(ff)
+            file.close()
     end=time.time()
     ti = str(end-start) +","
     file = open("bench.csv", "a")
@@ -127,6 +149,7 @@ def findCorruptions(ms):
 
 
 def send_h(h, host='127.0.0.1', port=12347):
+    global snt
     try:
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client.connect((host, port))
@@ -134,7 +157,7 @@ def send_h(h, host='127.0.0.1', port=12347):
         # Serialize the h array using pickle
         h_serialized = pickle.dumps(h)
         client.sendall(h_serialized)
-        
+        snt += h_serialized
         print("Array h sent to the original server.")  # Debug print
         
     except Exception as e:
@@ -143,6 +166,7 @@ def send_h(h, host='127.0.0.1', port=12347):
         client.close()
 
 def receiveHonestSums(host='0.0.0.0', port=12346):
+    global rcv
     try:
         server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         server.bind((host, port))
@@ -159,7 +183,7 @@ def receiveHonestSums(host='0.0.0.0', port=12346):
             if not data:
                 break
             new_arrays_serialized += data
-
+            rcv += len(data)
         # Deserialize new arrays
         new_sums_first, new_sums_second = pickle.loads(new_arrays_serialized)
 
@@ -208,6 +232,10 @@ if __name__ == "__main__":
     print(y,e)
     print(c)
     if y:
+        file = open("bytesServer.csv","a")
+        file.write(str(rcv)+","+str(snt)+"\n")
+        file.close()
+        print(rcv, snt)
         print("success")
         sys.exit(1)
     send_h(e)
@@ -217,4 +245,8 @@ if __name__ == "__main__":
         print("FINAL HONEST SUM: ", sumh)
     else:
         print("checksum not verified")
+    print(rcv, snt)
+    file = open("bytesServer.csv","a")
+    file.write(str(rcv)+","+str(snt)+"\n")
+    file.close()
     print("finished")

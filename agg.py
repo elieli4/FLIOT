@@ -12,13 +12,26 @@ received_values = {}
 received_count = 0
 # Total number of expected clients
 
+rcv = 0
+snt = 0
+
 import sys
-if len(sys.argv) < 3:
-    print("Usage: python agg.py <i> <j>")
+if len(sys.argv) < 4:
+    print("Usage: python agg.py <i> <j> <byte>")
     sys.exit(1)
 
 d = int(sys.argv[1])
 n = int(sys.argv[2])
+byte= int(sys.argv[3])
+
+if byte ==1:
+    p=256019
+elif byte ==2:
+    p=65536043
+elif byte ==3:
+    p=16777216019
+else: #byte==4
+    p=429496729609
 
 
 total_clients = d * n
@@ -28,6 +41,7 @@ lock = threading.Lock()
 
 # Function to send sums to the main server
 def send_sums_to_main_server(sums_first, sums_second, host='127.0.0.1', port=12346):
+    global snt
     try:
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client.connect((host, port))
@@ -37,7 +51,7 @@ def send_sums_to_main_server(sums_first, sums_second, host='127.0.0.1', port=123
         client.sendall(sums_serialized)
         
         print("Sums sent to main server.")  # Debug print
-        
+        snt = snt + len(sums_serialized)
     except Exception as e:
         print(f"Error sending sums to main server: {e}")
     finally:
@@ -57,6 +71,8 @@ def compute_sums():
 
     start = time.time()
     for i in range(0, d):
+        if i==0:
+            stt=time.time()
         for j in range(0, n):
 #            print(f"Checking i={i}, j={j}")  # Debug print
             key_1j = f"(0, {j})"
@@ -64,11 +80,17 @@ def compute_sums():
             if key_1j in received_values and key_ij in received_values:
                 m_1j_first, m_1j_second = received_values[key_1j]
                 m_ij_first, m_ij_second = received_values[key_ij]
-                s_ij_first = s1_first_sum - m_1j_first + m_ij_first
-                s_ij_second = s1_second_sum - m_1j_second + m_ij_second
+                s_ij_first = (s1_first_sum - m_1j_first + m_ij_first)%p
+                s_ij_second = (s1_second_sum - m_1j_second + m_ij_second)%p
                 sums_first[i, j] = s_ij_first
                 sums_second[i, j] = s_ij_second
  #               print(f"s_{i},{j}_first: {s_ij_first}, s_{i},{j}_second: {s_ij_second}")  # Debug print
+        if i==0:
+            enn = time.time()
+            ff = str(enn-stt) + "\n"
+            file = open("singleAggTimes.csv", "a")
+            file.write(ff)
+            file.close()
     end=time.time()
     ti = str(end-start) +","
     file = open("aggTimes.csv", "a")
@@ -80,11 +102,13 @@ def compute_sums():
 
 # Function to handle incoming client connections
 def handle_client(client_socket):
+    global rcv
     global received_count
     try:
-        message = client_socket.recv(1024).decode('utf-8')
+        data = client_socket.recv(1024)
+        message = data.decode('utf-8')
         print(f"Received message: {message}")
-
+        rcv += len(data)
         # Parse the received message
         client_id, num1, num2 = message.split(':')
         client_id = client_id.strip()
@@ -102,7 +126,7 @@ def handle_client(client_socket):
                 sums['second_sum'] += num2
 
             print(f"Current sums: {sums}")  # Debug print
-
+            print("received bytes from clients: ", rcv)
             # Check if all clients have sent their messages
             if received_count >= total_clients:
                 # Compute all sums s_i,j
@@ -114,6 +138,7 @@ def handle_client(client_socket):
         client_socket.close()
 
 def receive_h(host='0.0.0.0', port=12347):
+    global rcv
     try:
         server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         server.bind((host, port))
@@ -131,12 +156,16 @@ def receive_h(host='0.0.0.0', port=12347):
             if not data:
                 break
             h_serialized += data
-
+            rcv += len(data)
         # Deserialize h
         h = pickle.loads(h_serialized)
         print("Received array h from the main server.")
         return h
     except socket.timeout:
+        print(snt, rcv)
+        file = open("bytesAgg.csv","a")
+        file.write(str(rcv)+","+str(snt) +"\n")
+        file.close()
         print("timeout")
         if client_socket:
             client_socket.close()
@@ -161,6 +190,7 @@ def computeHonestSum(h):
     sendHonestSum(sumx, sumy)
 
 def sendHonestSum(sumx, sumy, host='127.0.0.1', port=12346):
+    global snt
     try:
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client.connect((host, port))
@@ -168,7 +198,7 @@ def sendHonestSum(sumx, sumy, host='127.0.0.1', port=12346):
         # Serialize the new sums arrays using pickle
         new_sums_serialized = pickle.dumps((sumx, sumy))
         client.sendall(new_sums_serialized)
-        
+        snt += len(new_sums_serialized)
         print("New arrays sent to main server.")  # Debug print
         
     except Exception as e:
@@ -206,3 +236,7 @@ def get_values():
 if __name__ == "__main__":
    # start_server()
     get_values()
+    print(snt, rcv)
+    file = open("bytesAgg.csv","a")
+    file.write(str(rcv)+","+str(snt)+"\n")
+    file.close()
