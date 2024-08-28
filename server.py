@@ -16,16 +16,17 @@ byte= int(sys.argv[3])
 rcv=0
 snt=0
 
-if byte ==1:
-    p=256019
-elif byte ==2:
-    p=65536043
-elif byte ==3:
-    p=16777216019
-else: #byte==4
-    p=429496729609
+#if byte ==1:
+ #   p=256019
+#elif byte ==2:
+  #  p=65536043
+#elif byte ==3:
+   # p=16777216019
+#else: #byte==4
+    #p=429496729609
 
 #p=33554432039
+p=324618072743403458035340044772650132096881761
 
 total_clients = d * n
 
@@ -157,7 +158,8 @@ def send_h(h, host='127.0.0.1', port=12347):
         # Serialize the h array using pickle
         h_serialized = pickle.dumps(h)
         client.sendall(h_serialized)
-        snt += h_serialized
+        print(len(h_serialized))
+        snt += len(h_serialized)
         print("Array h sent to the original server.")  # Debug print
         
     except Exception as e:
@@ -238,13 +240,20 @@ if __name__ == "__main__":
         print(rcv, snt)
         print("success")
         sys.exit(1)
+    print(len(e))
     send_h(e)
     sumx,sumy = receiveHonestSums()
+    start = time.time()
     sumh = decryptHonestSum(sumx, e, ks)
-    if testingChecksum(sumx, sumy, e, kprimes):
+    if testingChecksum(sumh, sumy, e, kprimes):
         print("FINAL HONEST SUM: ", sumh)
     else:
-        print("checksum not verified")
+        print("honest checksum not verified", sumh, sumy)
+    end=time.time()
+    ti = str(end-start) +","
+    file = open("bench.csv", "a")
+    file.write(ti)
+    file.close()
     print(rcv, snt)
     file = open("bytesServer.csv","a")
     file.write(str(rcv)+","+str(snt)+"\n")

@@ -24,15 +24,16 @@ d = int(sys.argv[1])
 n = int(sys.argv[2])
 byte= int(sys.argv[3])
 
-if byte ==1:
-    p=256019
-elif byte ==2:
-    p=65536043
-elif byte ==3:
-    p=16777216019
-else: #byte==4
-    p=429496729609
+#if byte ==1:
+ #   p=256019
+#elif byte ==2:
+ #   p=65536043
+#elif byte ==3:
+ #   p=16777216019
+#else: #byte==4
+ #   p=429496729609
 
+p=324618072743403458035340044772650132096881761
 
 total_clients = d * n
 
@@ -182,11 +183,17 @@ def receive_h(host='0.0.0.0', port=12347):
 def computeHonestSum(h):
     sumx = 0
     sumy = 0
+    start = time.time()
     for j in range(0,n):
         key = f"({h[j]}, {j})"
         x, y = received_values[key]
         sumx += x
         sumy += y
+    end=time.time()
+    ti = str(end-start) +","
+    file = open("aggTimes.csv", "a")
+    file.write(ti)
+    file.close()
     sendHonestSum(sumx, sumy)
 
 def sendHonestSum(sumx, sumy, host='127.0.0.1', port=12346):
