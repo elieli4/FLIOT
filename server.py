@@ -54,8 +54,8 @@ def receive_sums_from_server(host='0.0.0.0', port=12346):
         sums_first, sums_second = pickle.loads(sums_serialized)
 
         # Convert lists to numpy arrays
-        sums_first = np.array(sums_first)
-        sums_second = np.array(sums_second)
+#        sums_first = np.array(sums_first)
+ #       sums_second = np.array(sums_second)
 
         print("Received sums:")
         print("Sum First:")
@@ -72,21 +72,21 @@ def receive_sums_from_server(host='0.0.0.0', port=12346):
 def computeMs(ks, xs, kprimes, ys):
     ms = np.zeros((d,n))
     k = 1 #change this value
-    k1 = sum(ks[0,:])
-    k1prime = sum(kprimes[0,:])
+    k1 = sum(ks[0])
+    k1prime = sum(kprimes[0])
     start = time.time()
     for i in range(0,d):
         if i==0:
             stt=time.time()
         for j in range(0,n):
-            m = (xs[i,j]-k1+ks[0,j]-ks[i,j])%p
-            y_test = (k1prime-kprimes[0,j]+kprimes[i,j]+k*m)%p
-            if ys[i,j] == y_test:
-                ms[i,j]=m
+            m = (xs[i][j]-k1+ks[0][j]-ks[i][j])%p
+            y_test = (k1prime-kprimes[0][j]+kprimes[i][j]+k*m)%p
+            if (ys[i][j])%p == y_test:
+                ms[i][j]=m
             else:
                 print("checksum not verified")
-                print(y_test, ys[i,j])
-                print(m, xs[i,j], k1, ks[0,j], ks[i,j])
+                print(y_test, ys[i][j])
+                print(m, xs[i][j], k1, ks[0][j], ks[i][j])
                 return -1
         if i==0:
             enn = time.time()
@@ -106,22 +106,24 @@ def findHonestSum(ms):
     print(ms)
     start =time.time()
     for j in range(0,n):
-        count=Counter(ms[:,j])
+        #count=Counter(ms[:,j])
+        count=Counter([row[j] for row in ms])
         mce, _ = count.most_common(1)[0]
-        index = np.where(ms[:,j]==mce)[0][0]
+        #index = np.where(ms[:,j]==mce)[0][0]
+        index = np.where([row[j] for row in ms]==mce)[0][0]
         h[j]=index
     countt = Counter(h)
     firstLineHonest = countt[0]
     if firstLineHonest == n:
         e = None
-        y = ms[0,0]
+        y = ms[0][0]
     elif firstLineHonest == n-1:
         e=None
         index=0
         for i in range(0,n):
             if h[i]!=0:
                 index=h[i]
-        y=ms[index,0]
+        y=ms[index][0]
     else:
         y=None
         e=h
@@ -136,9 +138,9 @@ def findCorruptions(ms):
     c=np.zeros((d,n))
     start = time.time()
     for j in range(0,n):
-        count=Counter(ms[:,j])
+        count=Counter([row[j] for row in ms])
         mce, _ = count.most_common(1)[0]
-        indices = np.where(ms[:,j]!=mce)[0]
+        indices = np.where([row[j] for row in ms]!=mce)[0]
         for ind in indices:
             c[ind,j]=1
     end=time.time()
@@ -188,10 +190,10 @@ def receiveHonestSums(host='0.0.0.0', port=12346):
             rcv += len(data)
         # Deserialize new arrays
         new_sums_first, new_sums_second = pickle.loads(new_arrays_serialized)
-
+        
         # Convert lists to numpy arrays
-        new_sums_first = np.array(new_sums_first)
-        new_sums_second = np.array(new_sums_second)
+        #new_sums_first = np.array(new_sums_first)
+        #new_sums_second = np.array(new_sums_second)
 
         print("Received new sums:")
         print("New Sum First:")
@@ -209,8 +211,8 @@ def testingChecksum(sumh, sumy, h, kprimes):
     kprime = 0
     k = 1
     for i in range(0,n):
-        kprime += kprimes[h[i],i]
-    if (sumh*k+kprime)==sumy:
+        kprime += kprimes[h[i]][i]
+    if (sumh*k+kprime)%p==sumy:
         return True
     return False
 
@@ -218,16 +220,25 @@ def testingChecksum(sumh, sumy, h, kprimes):
 def decryptHonestSum(sumx, h, ks):
     k = 0
     for i in range(0,n):
-        k += ks[h[i], i]
-    sumh = sumx-k
+        k += ks[h[i]][i]
+    sumh = (sumx-k)%p
     return sumh
 
 if __name__ == "__main__":
     xs, ys = receive_sums_from_server()
+    print(type(xs[0][0]))
     #ks = np.array(list(csv.reader(open("ks.csv"))))
     #kprimes = np.array(list(csv.reader(open("kprimes.csv"))))
-    ks = np.transpose(np.genfromtxt("ks.csv", delimiter=","))
-    kprimes = np.transpose(np.genfromtxt("kprimes.csv", delimiter=","))
+    #ks = np.transpose(np.genfromtxt("ks.csv", delimiter=","))
+    #kprimes = np.transpose(np.genfromtxt("kprimes.csv", delimiter=","))
+    with open("ks.csv", newline='') as csvfile:
+        reader = csv.reader(csvfile, delimiter=',')
+        ks = [[int(value) for value in row] for row in reader]
+    ks = list(map(list, zip(*ks)))
+    with open("kprimes.csv", newline='') as csvfile:
+        reader = csv.reader(csvfile, delimiter=',')
+        kprimes = [[int(value) for value in row] for row in reader]
+    kprimes = list(map(list, zip(*kprimes)))
     ms = computeMs(ks, xs, kprimes, ys)
     y,e = findHonestSum(ms)
     c = findCorruptions(ms)

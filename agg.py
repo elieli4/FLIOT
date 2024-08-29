@@ -3,6 +3,7 @@ import threading
 import pickle
 import numpy as np
 import time
+import csv
 
 # Dictionary to hold sums of the first and second numbers from clients with ID (1, j)
 sums = {'first_sum': 0, 'second_sum': 0}
@@ -65,8 +66,10 @@ def compute_sums():
     s1_second_sum = sums['second_sum']
     
     # Initialize 2D arrays for storing sums
-    sums_first = np.zeros((d, n))
-    sums_second = np.zeros((d, n))
+   # sums_first = np.zeros((d, n))
+    #sums_second = np.zeros((d, n))
+    sums_first = [[0 for _ in range(n)] for _ in range(d)]
+    sums_second = [[0 for _ in range(n)] for _ in range(d)]
 
     print("Computing sums:")  # Debug print
 
@@ -83,8 +86,8 @@ def compute_sums():
                 m_ij_first, m_ij_second = received_values[key_ij]
                 s_ij_first = (s1_first_sum - m_1j_first + m_ij_first)%p
                 s_ij_second = (s1_second_sum - m_1j_second + m_ij_second)%p
-                sums_first[i, j] = s_ij_first
-                sums_second[i, j] = s_ij_second
+                sums_first[i][j] = s_ij_first
+                sums_second[i][j] = s_ij_second
  #               print(f"s_{i},{j}_first: {s_ij_first}, s_{i},{j}_second: {s_ij_second}")  # Debug print
         if i==0:
             enn = time.time()
@@ -93,6 +96,7 @@ def compute_sums():
             file.write(ff)
             file.close()
     end=time.time()
+#    print(type(s1_first_sum))
     ti = str(end-start) +","
     file = open("aggTimes.csv", "a")
     file.write(ti)
@@ -123,8 +127,8 @@ def handle_client(client_socket):
 
             # If the first part of the ID is 0, sum the numbers
             if client_id.startswith('(0,'):
-                sums['first_sum'] += num1
-                sums['second_sum'] += num2
+                sums['first_sum'] = (sums['first_sum']+num1)%p
+                sums['second_sum'] = (sums['second_sum']+num2)%p
 
             print(f"Current sums: {sums}")  # Debug print
             print("received bytes from clients: ", rcv)
@@ -187,8 +191,8 @@ def computeHonestSum(h):
     for j in range(0,n):
         key = f"({h[j]}, {j})"
         x, y = received_values[key]
-        sumx += x
-        sumy += y
+        sumx = (sumx+x)%p
+        sumy = (sumy+y)%p
     end=time.time()
     ti = str(end-start) +","
     file = open("aggTimes.csv", "a")
@@ -228,16 +232,26 @@ def start_server(host='0.0.0.0', port=12345):
         client_handler.start()
 
 def get_values():
-    xs = np.transpose(np.genfromtxt("inputs.csv", delimiter=","))
-    ys = np.transpose(np.genfromtxt("checksums.csv", delimiter=","))
+    #xs = np.transpose(np.genfromtxt("inputs.csv", delimiter=",",dtype=int))
+    #ys = np.transpose(np.genfromtxt("checksums.csv", delimiter=",",dtype=int))
+    with open("inputs.csv", newline='') as csvfile:
+        reader = csv.reader(csvfile, delimiter=',')
+        xs = [[int(value) for value in row] for row in reader]
+    xs = list(map(list, zip(*xs)))
+    with open("checksums.csv", newline='') as csvfile:
+        reader = csv.reader(csvfile, delimiter=',')
+        ys = [[int(value) for value in row] for row in reader]
+    ys = list(map(list, zip(*ys)))
+
     for i in range(d):
         for j in range(n):
             client_id = f"({i}, {j})"
-            num1 = xs[i,j]
-            num2 = ys[i,j]
+            num1 = xs[i][j]
+            num2 = ys[i][j]
+#            print(type(num1))
             received_values[client_id] = (num1, num2)
-    sums['first_sum'] = sum(xs[0,:])
-    sums['second_sum'] = sum(ys[0,:])
+    sums['first_sum'] = sum(xs[0])
+    sums['second_sum'] = sum(ys[0])
     compute_sums()
 
 if __name__ == "__main__":
