@@ -122,19 +122,19 @@ def find_honest_sum(ms):
         h[j]=index
     countt = Counter(h)
     firstLineHonest = countt[0]
-    if firstLineHonest == n:
-        e = None
-        y = ms[0][0]
-    elif firstLineHonest == n-1:
-        e=None
-        index=0
-        for i in range(0,n):
-            if h[i]!=0:
-                index=h[i]
-        y=ms[index][0]
-    else:
-        y=None
-        e=h
+   # if firstLineHonest == n:
+    #    e = None
+    #    y = ms[0][0]
+   # elif firstLineHonest == n-1:
+    #    e=None
+    #    index=0
+   #     for i in range(0,n):
+    #        if h[i]!=0:
+   #             index=h[i]
+  #      y=ms[index][0]
+ #   else:
+    y=None
+    e=h
     end=time.time()
     ti = str(end-start) +","
     file = open("bench.csv", "a")
