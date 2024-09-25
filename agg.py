@@ -5,14 +5,14 @@ import numpy as np
 import time
 import csv
 
-# Dictionary to hold sums of the first and second numbers from clients with ID (1, j)
+# Dictionary to hold sums of the encrypted values (first_sum) and checksums (second_sums) from clients with ID (1, j)
 sums = {'first_sum': 0, 'second_sum': 0}
 # Dictionary to hold all received values
 received_values = {}
-# Counter to track the number of received messages
+# Counter to track the number of received messages, to check data was received from all devices
 received_count = 0
-# Total number of expected clients
 
+# To measure bytes received and sent
 rcv = 0
 snt = 0
 
@@ -21,24 +21,16 @@ if len(sys.argv) < 4:
     print("Usage: python agg.py <i> <j> <byte>")
     sys.exit(1)
 
+# d is the number of devices per group, n is the number of groups, and byte is the size of the inputs (before encryption)
 d = int(sys.argv[1])
 n = int(sys.argv[2])
 byte= int(sys.argv[3])
 
-#if byte ==1:
- #   p=256019
-#elif byte ==2:
- #   p=65536043
-#elif byte ==3:
- #   p=16777216019
-#else: #byte==4
- #   p=429496729609
-
+# prime
 p=324618072743403458035340044772650132096881761
 
 total_clients = d * n
 
-# Lock for thread-safe updates
 lock = threading.Lock()
 
 # Function to send sums to the main server
@@ -48,11 +40,12 @@ def send_sums(sums_first, sums_second, host='127.0.0.1', port=12346):
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client.connect((host, port))
         
-        # Serialize the sums arrays using pickle
         sums_serialized = pickle.dumps((sums_first, sums_second))
         client.sendall(sums_serialized)
         
         print("Sums sent to main server.")  # Debug print
+
+        # Measure how many bytes were sent, and store the info in a file
         singleSum=len(pickle.dumps((sums['first_sum'],sums['second_sum'])))
         snt = snt + len(sums_serialized)
         file = open("singleSum.csv","a")
