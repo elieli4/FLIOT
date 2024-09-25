@@ -72,8 +72,16 @@ def receive_sums_from_server(host='0.0.0.0', port=12346):
 def computeMs(ks, xs, kprimes, ys):
     ms = np.zeros((d,n))
     k = 1 #change this value
+    st = time.time()
     k1 = sum(ks[0])
     k1prime = sum(kprimes[0])
+    ff = xs[0][0]-k1
+    kk = ys[0][0]-k1prime
+    en = time.time()
+    ti=str(en-st)+"\n"
+    file = open("singleSumTimeBench.csv", "a")
+    file.write(ti)  
+    file.close()
     start = time.time()
     for i in range(0,d):
         if i==0:
