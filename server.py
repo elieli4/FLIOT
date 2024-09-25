@@ -31,7 +31,7 @@ p=324618072743403458035340044772650132096881761
 total_clients = d * n
 
 # Function to handle receiving sums from the original server
-def receive_sums_from_server(host='0.0.0.0', port=12346):
+def receive_sums(host='0.0.0.0', port=12346):
     global rcv
     try:
         server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -69,7 +69,7 @@ def receive_sums_from_server(host='0.0.0.0', port=12346):
         client_socket.close()
         server.close()
 
-def computeMs(ks, xs, kprimes, ys):
+def compute_Ms(ks, xs, kprimes, ys):
     ms = np.zeros((d,n))
     k = 1 #change this value
     st = time.time()
@@ -109,7 +109,7 @@ def computeMs(ks, xs, kprimes, ys):
     file.close()
     return ms
 
-def findHonestSum(ms):
+def find_honest_sum(ms):
     h = [None] * n
     print(ms)
     start =time.time()
@@ -142,7 +142,7 @@ def findHonestSum(ms):
     file.close()
     return y,e
 
-def findCorruptions(ms):
+def find_corruptions(ms):
     c=np.zeros((d,n))
     start = time.time()
     for j in range(0,n):
@@ -177,7 +177,7 @@ def send_h(h, host='127.0.0.1', port=12347):
     finally:
         client.close()
 
-def receiveHonestSums(host='0.0.0.0', port=12346):
+def receive_honest_sum(host='0.0.0.0', port=12346):
     global rcv
     try:
         server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -215,7 +215,7 @@ def receiveHonestSums(host='0.0.0.0', port=12346):
         client_socket.close()
         server.close()
 
-def testingChecksum(sumh, sumy, h, kprimes):
+def testing_checksum(sumh, sumy, h, kprimes):
     kprime = 0
     k = 1
     for i in range(0,n):
@@ -225,7 +225,7 @@ def testingChecksum(sumh, sumy, h, kprimes):
     return False
 
 
-def decryptHonestSum(sumx, h, ks):
+def decrypt_honest_sum(sumx, h, ks):
     k = 0
     for i in range(0,n):
         k += ks[h[i]][i]
@@ -233,7 +233,7 @@ def decryptHonestSum(sumx, h, ks):
     return sumh
 
 if __name__ == "__main__":
-    xs, ys = receive_sums_from_server()
+    xs, ys = receive_sums()
     print(type(xs[0][0]))
     #ks = np.array(list(csv.reader(open("ks.csv"))))
     #kprimes = np.array(list(csv.reader(open("kprimes.csv"))))
@@ -247,9 +247,9 @@ if __name__ == "__main__":
         reader = csv.reader(csvfile, delimiter=',')
         kprimes = [[int(value) for value in row] for row in reader]
     kprimes = list(map(list, zip(*kprimes)))
-    ms = computeMs(ks, xs, kprimes, ys)
-    y,e = findHonestSum(ms)
-    c = findCorruptions(ms)
+    ms = compute_Ms(ks, xs, kprimes, ys)
+    y,e = find_honest_sum(ms)
+    c = find_corruptions(ms)
     print(y,e)
     print(c)
     if y:
@@ -261,10 +261,10 @@ if __name__ == "__main__":
         sys.exit(1)
     print(len(e))
     send_h(e)
-    sumx,sumy = receiveHonestSums()
+    sumx,sumy = receive_honest_sum()
     start = time.time()
-    sumh = decryptHonestSum(sumx, e, ks)
-    if testingChecksum(sumh, sumy, e, kprimes):
+    sumh = decrypt_honest_sum(sumx, e, ks)
+    if testing_checksum(sumh, sumy, e, kprimes):
         print("FINAL HONEST SUM: ", sumh)
     else:
         print("honest checksum not verified", sumh, sumy)
