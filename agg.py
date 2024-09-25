@@ -42,7 +42,7 @@ total_clients = d * n
 lock = threading.Lock()
 
 # Function to send sums to the main server
-def sendSums(sums_first, sums_second, host='127.0.0.1', port=12346):
+def send_sums(sums_first, sums_second, host='127.0.0.1', port=12346):
     global snt
     try:
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -110,7 +110,7 @@ def compute_sums():
     #single sume compute time:
 
     # Send the computed sums to the main server
-    sendSums(sums_first, sums_second)
+    send_sums(sums_first, sums_second)
 
 # Function to handle incoming client connections
 def handle_client(client_socket):
@@ -189,9 +189,9 @@ def receive_h(host='0.0.0.0', port=12347):
         if client_socket:
             client_socket.close()
         server.close()
-        computeHonestSum(h)
+        compute_honest_sum(h)
 
-def computeHonestSum(h):
+def compute_honest_sum(h):
     sumx = 0
     sumy = 0
     start = time.time()
@@ -205,9 +205,9 @@ def computeHonestSum(h):
     file = open("aggTimes.csv", "a")
     file.write(ti)
     file.close()
-    sendHonestSum(sumx, sumy)
+    send_honest_sum(sumx, sumy)
 
-def sendHonestSum(sumx, sumy, host='127.0.0.1', port=12346):
+def send_honest_sum(sumx, sumy, host='127.0.0.1', port=12346):
     global snt
     try:
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
