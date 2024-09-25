@@ -250,7 +250,7 @@ if __name__ == "__main__":
     kprimes = list(map(list, zip(*kprimes)))
     ms = compute_Ms(ks, xs, kprimes, ys)
     #y,e = find_honest_sum(ms)
-    e = find_honest_sums(ms)
+    e = find_honest_sum(ms)
     c = find_corruptions(ms)
     #print(y,e)
     print(c)
