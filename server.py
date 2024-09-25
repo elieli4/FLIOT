@@ -16,21 +16,11 @@ byte= int(sys.argv[3])
 rcv=0
 snt=0
 
-#if byte ==1:
- #   p=256019
-#elif byte ==2:
-  #  p=65536043
-#elif byte ==3:
-   # p=16777216019
-#else: #byte==4
-    #p=429496729609
-
-#p=33554432039
 p=324618072743403458035340044772650132096881761
 
 total_clients = d * n
 
-# Function to handle receiving sums from the original server
+# Function to handle receiving sums from the aggregator
 def receive_sums(host='0.0.0.0', port=12346):
     global rcv
     try:
@@ -53,15 +43,12 @@ def receive_sums(host='0.0.0.0', port=12346):
         # Deserialize sums
         sums_first, sums_second = pickle.loads(sums_serialized)
 
-        # Convert lists to numpy arrays
-#        sums_first = np.array(sums_first)
- #       sums_second = np.array(sums_second)
-
-        print("Received sums:")
-        print("Sum First:")
-        print(sums_first)
-        print("Sum Second:")
-        print(sums_second)
+        # Debug check
+        #print("Received sums:")
+        #print("Sum First:")
+        #print(sums_first)
+        #print("Sum Second:")
+        #print(sums_second)
         return sums_first, sums_second
     except Exception as e:
         print(f"Error receiving sums: {e}")
@@ -69,6 +56,7 @@ def receive_sums(host='0.0.0.0', port=12346):
         client_socket.close()
         server.close()
 
+# Compute
 def compute_Ms(ks, xs, kprimes, ys):
     ms = np.zeros((d,n))
     k = 1 #change this value
@@ -122,25 +110,14 @@ def find_honest_sum(ms):
         h[j]=index
     countt = Counter(h)
     firstLineHonest = countt[0]
-   # if firstLineHonest == n:
-    #    e = None
-    #    y = ms[0][0]
-   # elif firstLineHonest == n-1:
-    #    e=None
-    #    index=0
-   #     for i in range(0,n):
-    #        if h[i]!=0:
-   #             index=h[i]
-  #      y=ms[index][0]
- #   else:
-    #y=None
+
     e=h
     end=time.time()
     ti = str(end-start) +","
     file = open("bench.csv", "a")
     file.write(ti)                      
     file.close()
-    #return y,e
+
     return e
 
 def find_corruptions(ms):
@@ -171,10 +148,10 @@ def send_h(h, host='127.0.0.1', port=12347):
         client.sendall(h_serialized)
         print(len(h_serialized))
         snt += len(h_serialized)
-        print("Array h sent to the original server.")  # Debug print
+        print("Array h sent to the aggregator.")  # Debug print
         
     except Exception as e:
-        print(f"Error sending h to the original server: {e}")
+        print(f"Error sending h to the aggregator: {e}")
     finally:
         client.close()
 
@@ -249,18 +226,12 @@ if __name__ == "__main__":
         kprimes = [[int(value) for value in row] for row in reader]
     kprimes = list(map(list, zip(*kprimes)))
     ms = compute_Ms(ks, xs, kprimes, ys)
-    #y,e = find_honest_sum(ms)
+
     e = find_honest_sum(ms)
     c = find_corruptions(ms)
-    #print(y,e)
+
     print(c)
-    #if y:
-        #file = open("bytesServer.csv","a")
-        #file.write(str(rcv)+","+str(snt)+"\n")
-       # file.close()
-       # print(rcv, snt)
-        #print("success")
-        #sys.exit(1)
+
     print(len(e))
     send_h(e)
     sumx,sumy = receive_honest_sum()
