@@ -257,7 +257,7 @@ if __name__ == "__main__":
     #if y:
         #file = open("bytesServer.csv","a")
         #file.write(str(rcv)+","+str(snt)+"\n")
-        file.close()
+       # file.close()
        # print(rcv, snt)
         #print("success")
         #sys.exit(1)
