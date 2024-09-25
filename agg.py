@@ -53,7 +53,12 @@ def send_sums_to_main_server(sums_first, sums_second, host='127.0.0.1', port=123
         client.sendall(sums_serialized)
         
         print("Sums sent to main server.")  # Debug print
+        singleSum=len(pickle.dumps((sums['first_sum'],sums['second_sum'])))
         snt = snt + len(sums_serialized)
+        file = open("singleSum.csv","a")
+        file.write(str(singleSum) + "\n")
+        file.close()
+
     except Exception as e:
         print(f"Error sending sums to main server: {e}")
     finally:
@@ -102,6 +107,8 @@ def compute_sums():
     file.write(ti)
     file.close
     print(ti)
+    #single sume compute time:
+
     # Send the computed sums to the main server
     send_sums_to_main_server(sums_first, sums_second)
 
@@ -250,8 +257,14 @@ def get_values():
             num2 = ys[i][j]
 #            print(type(num1))
             received_values[client_id] = (num1, num2)
+    st = time.time()
     sums['first_sum'] = sum(xs[0])
     sums['second_sum'] = sum(ys[0])
+    en=time.time()
+    tii=en-st
+    file = open("singleSumTime.csv","a")
+    file.write(str(tii) +  "\n")
+    file.close()
     compute_sums()
 
 if __name__ == "__main__":
