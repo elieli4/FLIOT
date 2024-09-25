@@ -115,7 +115,7 @@ def compute_sums():
     # Send the computed sums to the main server
     send_sums(sums_first, sums_second)
 
-# Function to handle incoming client connections
+# Function to handle incoming client connections. Can be bypassed for benchmarking. 
 def handle_client(client_socket):
     global rcv
     global received_count
@@ -152,6 +152,7 @@ def handle_client(client_socket):
     finally:
         client_socket.close()
 
+# Receive the set of honest user indices from the server.
 def receive_h(host='0.0.0.0', port=12347):
     global rcv
     try:
@@ -176,6 +177,7 @@ def receive_h(host='0.0.0.0', port=12347):
         h = pickle.loads(h_serialized)
         print("Received array h from the main server.")
         return h
+    #try to delete this later
     except socket.timeout:
         print(snt, rcv)
         file = open("bytesAgg.csv","a")
@@ -194,6 +196,7 @@ def receive_h(host='0.0.0.0', port=12347):
         server.close()
         compute_honest_sum(h)
 
+# Compute the encrypted sum from only honest clients, given the set of honest clients h from the server
 def compute_honest_sum(h):
     sumx = 0
     sumy = 0
@@ -203,31 +206,35 @@ def compute_honest_sum(h):
         x, y = received_values[key]
         sumx = (sumx+x)%p
         sumy = (sumy+y)%p
+    # Benchmarking execution time
     end=time.time()
     ti = str(end-start) +","
     file = open("aggTimes.csv", "a")
     file.write(ti)
     file.close()
+
+    # Send results to server
     send_honest_sum(sumx, sumy)
 
+# Send the encrypted honest sum + checksum to the server
 def send_honest_sum(sumx, sumy, host='127.0.0.1', port=12346):
     global snt
     try:
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client.connect((host, port))
         
-        # Serialize the new sums arrays using pickle
-        new_sums_serialized = pickle.dumps((sumx, sumy))
-        client.sendall(new_sums_serialized)
-        snt += len(new_sums_serialized)
-        print("New arrays sent to main server.")  # Debug print
+        # Serialize the sums arrays using pickle
+        honest_sums_serialized = pickle.dumps((sumx, sumy))
+        client.sendall(honest_sums_serialized)
+        snt += len(honest_sums_serialized)
+        print("Honest sums arrays sent to main server.")  # Debug print
         
     except Exception as e:
         print(f"Error sending new arrays to main server: {e}")
     finally:
         client.close() 
 
-# Main server function
+# Main aggregating server function. Can be bypassed for benchmarking.
 def start_server(host='0.0.0.0', port=12345):
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -241,9 +248,10 @@ def start_server(host='0.0.0.0', port=12345):
         client_handler = threading.Thread(target=handle_client, args=(client_socket,))
         client_handler.start()
 
+# Bypass of receiving values for faster benchmarking of the second phase. This assumes files with all inputs present, instead of receiving data from clients.
 def get_values():
-    #xs = np.transpose(np.genfromtxt("inputs.csv", delimiter=",",dtype=int))
-    #ys = np.transpose(np.genfromtxt("checksums.csv", delimiter=",",dtype=int))
+
+    # Reading values from files and store in arrays
     with open("inputs.csv", newline='') as csvfile:
         reader = csv.reader(csvfile, delimiter=',')
         xs = [[int(value) for value in row] for row in reader]
@@ -253,26 +261,35 @@ def get_values():
         ys = [[int(value) for value in row] for row in reader]
     ys = list(map(list, zip(*ys)))
 
+    # Put the values in the dictionary
     for i in range(d):
         for j in range(n):
             client_id = f"({i}, {j})"
             num1 = xs[i][j]
             num2 = ys[i][j]
-#            print(type(num1))
             received_values[client_id] = (num1, num2)
-    st = time.time()
+    #st = time.time()
+
+    # Compute the sum for the first row only
     sums['first_sum'] = sum(xs[0])
     sums['second_sum'] = sum(ys[0])
-    en=time.time()
-    tii=en-st
-    file = open("singleSumTime.csv","a")
-    file.write(str(tii) +  "\n")
-    file.close()
+
+    # benchmarking for baseline
+    #en=time.time()
+    #tii=en-st
+    #file = open("singleSumTime.csv","a")
+    #file.write(str(tii) +  "\n")
+    #file.close()
     compute_sums()
 
 if __name__ == "__main__":
+    # bypass this for benchmarking
    # start_server()
+
+    # Use this for phase 2 benchmarking, assuming necessary files are present
     get_values()
+
+    # Print and store bytes info for communication benchmarking
     print(snt, rcv)
     file = open("bytesAgg.csv","a")
     file.write(str(rcv)+","+str(snt)+"\n")
