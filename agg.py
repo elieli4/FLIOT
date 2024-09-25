@@ -42,7 +42,7 @@ total_clients = d * n
 lock = threading.Lock()
 
 # Function to send sums to the main server
-def send_sums_to_main_server(sums_first, sums_second, host='127.0.0.1', port=12346):
+def sendSums(sums_first, sums_second, host='127.0.0.1', port=12346):
     global snt
     try:
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -110,7 +110,7 @@ def compute_sums():
     #single sume compute time:
 
     # Send the computed sums to the main server
-    send_sums_to_main_server(sums_first, sums_second)
+    sendSums(sums_first, sums_second)
 
 # Function to handle incoming client connections
 def handle_client(client_socket):
