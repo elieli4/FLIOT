@@ -133,14 +133,15 @@ def find_honest_sum(ms):
    #             index=h[i]
   #      y=ms[index][0]
  #   else:
-    y=None
+    #y=None
     e=h
     end=time.time()
     ti = str(end-start) +","
     file = open("bench.csv", "a")
     file.write(ti)                      
     file.close()
-    return y,e
+    #return y,e
+    return e
 
 def find_corruptions(ms):
     c=np.zeros((d,n))
@@ -248,17 +249,18 @@ if __name__ == "__main__":
         kprimes = [[int(value) for value in row] for row in reader]
     kprimes = list(map(list, zip(*kprimes)))
     ms = compute_Ms(ks, xs, kprimes, ys)
-    y,e = find_honest_sum(ms)
+    #y,e = find_honest_sum(ms)
+    e = find_honest_sums(ms)
     c = find_corruptions(ms)
-    print(y,e)
+    #print(y,e)
     print(c)
-    if y:
-        file = open("bytesServer.csv","a")
-        file.write(str(rcv)+","+str(snt)+"\n")
+    #if y:
+        #file = open("bytesServer.csv","a")
+        #file.write(str(rcv)+","+str(snt)+"\n")
         file.close()
-        print(rcv, snt)
-        print("success")
-        sys.exit(1)
+       # print(rcv, snt)
+        #print("success")
+        #sys.exit(1)
     print(len(e))
     send_h(e)
     sumx,sumy = receive_honest_sum()
