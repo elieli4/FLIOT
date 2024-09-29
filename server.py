@@ -129,12 +129,13 @@ def find_honest_sum(ms):
     return h
 
 # Localize all corrupted devices
-def find_corruptions(ms):
+def find_corruptions(ms,h):
     c=np.zeros((d,n))
     start = time.time()
     for j in range(0,n):
         count=Counter([row[j] for row in ms])
-        mce, _ = count.most_common(1)[0]
+        # mce, _ = count.most_common(1)[0]
+        mce = ms[h[i],j]
         indices = np.where([row[j] for row in ms]!=mce)[0]
         for ind in indices:
             c[ind,j]=1
@@ -237,7 +238,7 @@ if __name__ == "__main__":
     # Go through all algorithms to get the correct aggregation and localize the corrupted devices
     ms = compute_Ms(ks, xs, kprimes, ys)
     e = find_honest_sum(ms)
-    c = find_corruptions(ms)
+    c = find_corruptions(ms,e)
 
     print(c)
 
