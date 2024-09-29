@@ -56,21 +56,27 @@ def receive_sums(host='0.0.0.0', port=12346):
         client_socket.close()
         server.close()
 
-# Compute
+# Decrypt the n*d sums sent by the aggregator
 def compute_Ms(ks, xs, kprimes, ys):
     ms = np.zeros((d,n))
     k = 1 #change this value
-    st = time.time()
+    #st = time.time()
+
+    # keys of first row
     k1 = sum(ks[0])
     k1prime = sum(kprimes[0])
-    ff = xs[0][0]-k1
-    kk = ys[0][0]-k1prime
-    en = time.time()
-    ti=str(en-st)+"\n"
-    file = open("singleSumTimeBench.csv", "a")
-    file.write(ti)  
-    file.close()
+
+    # For baseline benchmarking
+    #ff = xs[0][0]-k1
+    #kk = ys[0][0]-k1prime
+    #en = time.time()
+    #ti=str(en-st)+"\n"
+    #file = open("singleSumTimeBench.csv", "a")
+    #file.write(ti)  
+    #file.close()
+    
     start = time.time()
+    # decrypt sum by sum
     for i in range(0,d):
         if i==0:
             stt=time.time()
@@ -97,10 +103,13 @@ def compute_Ms(ks, xs, kprimes, ys):
     file.close()
     return ms
 
+# Find a set h of size n: with one honest device per group. 
 def find_honest_sum(ms):
     h = [None] * n
     print(ms)
     start =time.time()
+
+    # For each group, find the most common sum. Then find a device that when included in the sum produces the most common sum.
     for j in range(0,n):
         #count=Counter(ms[:,j])
         count=Counter([row[j] for row in ms])
@@ -111,15 +120,15 @@ def find_honest_sum(ms):
     countt = Counter(h)
     firstLineHonest = countt[0]
 
-    e=h
     end=time.time()
     ti = str(end-start) +","
     file = open("bench.csv", "a")
     file.write(ti)                      
     file.close()
 
-    return e
+    return h
 
+# Localize all corrupted devices
 def find_corruptions(ms):
     c=np.zeros((d,n))
     start = time.time()
@@ -136,7 +145,7 @@ def find_corruptions(ms):
     file.close()
     return c
 
-
+# Send list of honest device indices to the aggregator
 def send_h(h, host='127.0.0.1', port=12347):
     global snt
     try:
@@ -155,6 +164,7 @@ def send_h(h, host='127.0.0.1', port=12347):
     finally:
         client.close()
 
+# Receive the final sum from only honest devices from the aggregator
 def receive_honest_sum(host='0.0.0.0', port=12346):
     global rcv
     try:
@@ -202,7 +212,7 @@ def testing_checksum(sumh, sumy, h, kprimes):
         return True
     return False
 
-
+# Decrypt the honest sum
 def decrypt_honest_sum(sumx, h, ks):
     k = 0
     for i in range(0,n):
@@ -213,10 +223,8 @@ def decrypt_honest_sum(sumx, h, ks):
 if __name__ == "__main__":
     xs, ys = receive_sums()
     print(type(xs[0][0]))
-    #ks = np.array(list(csv.reader(open("ks.csv"))))
-    #kprimes = np.array(list(csv.reader(open("kprimes.csv"))))
-    #ks = np.transpose(np.genfromtxt("ks.csv", delimiter=","))
-    #kprimes = np.transpose(np.genfromtxt("kprimes.csv", delimiter=","))
+
+    # For prototyping, keys are in files.
     with open("ks.csv", newline='') as csvfile:
         reader = csv.reader(csvfile, delimiter=',')
         ks = [[int(value) for value in row] for row in reader]
@@ -225,14 +233,15 @@ if __name__ == "__main__":
         reader = csv.reader(csvfile, delimiter=',')
         kprimes = [[int(value) for value in row] for row in reader]
     kprimes = list(map(list, zip(*kprimes)))
-    ms = compute_Ms(ks, xs, kprimes, ys)
 
+    # Go through all algorithms to get the correct aggregation and localize the corrupted devices
+    ms = compute_Ms(ks, xs, kprimes, ys)
     e = find_honest_sum(ms)
     c = find_corruptions(ms)
 
     print(c)
 
-    print(len(e))
+    #print(len(e))
     send_h(e)
     sumx,sumy = receive_honest_sum()
     start = time.time()
