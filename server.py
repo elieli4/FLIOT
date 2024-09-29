@@ -135,7 +135,7 @@ def find_corruptions(ms,h):
     for j in range(0,n):
         count=Counter([row[j] for row in ms])
         # mce, _ = count.most_common(1)[0]
-        mce = ms[h[i],j]
+        mce = ms[h[j],j]
         indices = np.where([row[j] for row in ms]!=mce)[0]
         for ind in indices:
             c[ind,j]=1
