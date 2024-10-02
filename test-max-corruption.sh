@@ -13,19 +13,21 @@ pkill -f server.py
 k=$1
 n=$k
 d=$2
-byte=$3
+byte=3
 l=$((2 **($byte*8)))
 m=$(($l -1))
-echo "d: $d, n: $n, max user input: $m"
+echo "d: $d, n: $n"
 sum=0
 
 for ((j=0;j<n;j++)); do
-	g=$(shuf -i 0-$m -n 1)
-	sum=$((sum+g))
+	f=$(shuf -i 0-$m -n 1)
+	sum=$((sum+f))
 	for ((i=0;i<d;i++)); do
     		if ((i<d/2)); then
       			g=$(shuf -i 0-$m -n 1)
-    		fi
+    		else
+			g=$f
+		fi
 		hex=$(openssl rand -hex 18)
 		r1=$((0x${hex}))
 		if [ "$r1" -lt 0 ]; then

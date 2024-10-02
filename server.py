@@ -242,7 +242,7 @@ if __name__ == "__main__":
     ms = compute_Ms(ks, xs, kprimes, ys)
     e = find_honest_sum(ms)
     c = find_corruptions(ms,e)
-
+    print("Honest group of devices: ",e) #debug
     print("Corrupted devices: ",c)
 
     #print(len(e))

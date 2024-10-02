@@ -13,10 +13,10 @@ pkill -f server.py
 k=$1
 n=$k
 d=$2
-byte=$3
+byte=3
 l=$((2 **($byte*8)))
 m=$(($l -1))
-echo "d: $d, n: $n, max user input: $m"
+echo "d: $d, n: $n"
 sum=0
 
 for ((j=0;j<n;j++)); do
@@ -60,6 +60,6 @@ gnome-terminal -- bash -c "python server.py $d $n $byte; sleep 100; exit"
 gnome-terminal -- bash -c "python agg.py $d $n $byte; sleep 100; exit"&
 TERMINAL_PID=$!
 
-echo "correct sum: $sum"
+echo "Correct sum: $sum"
 
 sleep 3
