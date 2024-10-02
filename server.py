@@ -22,6 +22,7 @@ total_clients = d * n
 
 # Function to handle receiving sums from the aggregator
 def receive_sums(host='0.0.0.0', port=12346):
+    print("Receiving sums from aggregator.")
     global rcv
     try:
         server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -58,6 +59,7 @@ def receive_sums(host='0.0.0.0', port=12346):
 
 # Decrypt the n*d sums sent by the aggregator
 def compute_Ms(ks, xs, kprimes, ys):
+    print("Decrypting sums and checking checksums.")
     ms = np.zeros((d,n))
     k = 1 #change this value
     #st = time.time()
@@ -105,8 +107,9 @@ def compute_Ms(ks, xs, kprimes, ys):
 
 # Find a set h of size n: with one honest device per group. 
 def find_honest_sum(ms):
+    print("Finding honest devices")
     h = [None] * n
-    print(ms)
+    #print(ms)
     start =time.time()
 
     # For each group, find the most common sum. Then find a device that when included in the sum produces the most common sum.
@@ -130,6 +133,7 @@ def find_honest_sum(ms):
 
 # Localize all corrupted devices
 def find_corruptions(ms,h):
+    print("Finding corruptions")
     c=np.zeros((d,n))
     start = time.time()
     for j in range(0,n):
@@ -156,7 +160,6 @@ def send_h(h, host='127.0.0.1', port=12347):
         # Serialize the h array using pickle
         h_serialized = pickle.dumps(h)
         client.sendall(h_serialized)
-        print(len(h_serialized))
         snt += len(h_serialized)
         print("Array h sent to the aggregator.")  # Debug print
         
@@ -192,11 +195,11 @@ def receive_honest_sum(host='0.0.0.0', port=12346):
         #new_sums_first = np.array(new_sums_first)
         #new_sums_second = np.array(new_sums_second)
 
-        print("Received new sums:")
-        print("New Sum First:")
-        print(new_sums_first)
-        print("New Sum Second:")
-        print(new_sums_second)
+        #print("Received new sums:")
+        #print("New Sum First:")
+        #print(new_sums_first)
+        #print("New Sum Second:")
+        #print(new_sums_second)
         return new_sums_first, new_sums_second
     except Exception as e:
         print(f"Error receiving new sums: {e}")
@@ -223,7 +226,7 @@ def decrypt_honest_sum(sumx, h, ks):
 
 if __name__ == "__main__":
     xs, ys = receive_sums()
-    print(type(xs[0][0]))
+    #print(type(xs[0][0]))
 
     # For prototyping, keys are in files.
     with open("ks.csv", newline='') as csvfile:
@@ -240,7 +243,7 @@ if __name__ == "__main__":
     e = find_honest_sum(ms)
     c = find_corruptions(ms,e)
 
-    print(c)
+    print("Corrupted devices: ",c)
 
     #print(len(e))
     send_h(e)
@@ -256,8 +259,8 @@ if __name__ == "__main__":
     file = open("bench.csv", "a")
     file.write(ti)
     file.close()
-    print(rcv, snt)
+    print("Bytes received/sent: ",rcv, snt)
     file = open("bytesServer.csv","a")
     file.write(str(rcv)+","+str(snt)+"\n")
     file.close()
-    print("finished")
+    print("Finished")
