@@ -21,8 +21,11 @@ sum=0
 
 for ((j=0;j<n;j++)); do
 	g=$(shuf -i 0-$m -n 1)
-	sum=$((sum + g))
+	sum=$((sum+g))
 	for ((i=0;i<d;i++)); do
+    		if ((i<d/2)); then
+      			g=$(shuf -i 0-$m -n 1)
+    		fi
 		hex=$(openssl rand -hex 18)
 		r1=$((0x${hex}))
 		if [ "$r1" -lt 0 ]; then
@@ -50,7 +53,7 @@ for ((j=0;j<n;j++)); do
 		#sleep 0.1
 	done
 	echo "" >> ks.csv
-  	echo "" >> kprimes.csv
+ 	echo "" >> kprimes.csv
 	echo "" >> inputs.csv
 	echo "" >> checksums.csv
 done
@@ -60,6 +63,6 @@ gnome-terminal -- bash -c "python server.py $d $n $byte; sleep 100; exit"
 gnome-terminal -- bash -c "python agg.py $d $n $byte; sleep 100; exit"&
 TERMINAL_PID=$!
 
-echo "correct sum: $sum"
+echo "Correct sum: $sum"
 
 sleep 3
