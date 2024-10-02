@@ -110,7 +110,7 @@ def compute_sums():
     file = open("aggTimes.csv", "a")
     file.write(ti)
     file.close
-    print(ti)
+    #print(ti)
 
     # Send the computed sums to the main server
     send_sums(sums_first, sums_second)
@@ -140,8 +140,8 @@ def handle_client(client_socket):
                 sums['first_sum'] = (sums['first_sum']+num1)%p
                 sums['second_sum'] = (sums['second_sum']+num2)%p
 
-            print(f"Current sums: {sums}")  # Debug print
-            print("received bytes from clients: ", rcv)
+            #print(f"Current sums: {sums}")  # Debug print
+            #print("received bytes from clients: ", rcv)
             # Check if all clients have sent their messages
             if received_count >= total_clients:
                 # Compute all sums s_i,j
@@ -198,6 +198,7 @@ def receive_h(host='0.0.0.0', port=12347):
 
 # Compute the encrypted sum from only honest clients, given the set of honest clients h from the server
 def compute_honest_sum(h):
+    print("Computing encrypted honest sum.")
     sumx = 0
     sumy = 0
     start = time.time()
@@ -290,7 +291,7 @@ if __name__ == "__main__":
     get_values()
 
     # Print and store bytes info for communication benchmarking
-    print(snt, rcv)
+    print("Bytes sent/received: ",snt, rcv)
     file = open("bytesAgg.csv","a")
     file.write(str(rcv)+","+str(snt)+"\n")
     file.close()
