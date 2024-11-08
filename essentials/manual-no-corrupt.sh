@@ -55,6 +55,8 @@ for ((j=0;j<n;j++)); do
 	echo "" >> checksums.csv
 done
 
+python server.py $d $n $byte
+
 #sleep 1
 #gnome-terminal -- bash -c "python server.py $d $n $byte; sleep 100; exit"
 #gnome-terminal -- bash -c "python agg.py $d $n $byte; sleep 100; exit"&
