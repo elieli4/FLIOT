@@ -13,20 +13,67 @@ Prerequisites: OpenSSL, numpy
 
 Clone this repository.
 
-Testing with no corruptions:
+### Testing with automatic start of python scripts (gnome must work on computer):
+
+*Testing with no corruptions:*
 ```
   .\test-no-corrupt.sh n d
 ```
-where n is the number of groups, and d is the number of devices per group. For instance:
+where n is the number of groups, and d is the number of devices per group. 
+
+For instance:
 ```
   .\test-no-corrupt.sh 50 5
 ```
 
-Testing with the maximum number of corruptions:
+*Testing with the maximum number of corruptions:*
 ```
   .\test-max-corruption.sh n d
 ```
-where n is the number of groups, and d is the number of devices per group. For instance:
+where n is the number of groups, and d is the number of devices per group. 
+
+For instance:
 ```
   .\test-max-corruption.sh 50 5
+```
+
+### Testing with manual start of python scripts:
+
+*Testing with no corruptions:*
+```
+  .\manual-no-corrupt.sh n d
+```
+and in another terminal window, enter:
+```
+  python agg.py n d
+```
+where n is the number of groups, and d is the number of devices per group. 
+
+For instance:
+```
+  .\manual-no-corrupt.sh 50 5
+```
+and in another terminal window, enter:
+```
+  python agg.py 50 5
+```
+
+
+*Testing with the maximum number of corruptions:*
+```
+  .\manual-max-corrupt.sh n d
+```
+and in another terminal window, enter:
+```
+  python agg.py n d
+```
+where n is the number of groups, and d is the number of devices per group. 
+
+For instance:
+```
+  .\manual-max-corrupt.sh 50 5
+```
+and in another terminal window, enter:
+```
+  python agg.py 50 5
 ```
