@@ -17,14 +17,14 @@ rcv = 0
 snt = 0
 
 import sys
-if len(sys.argv) < 4:
-    print("Usage: python agg.py <i> <j> <byte>")
+if len(sys.argv) < 3:
+    print("Usage: python agg.py <#of groups> <#of devices>")
     sys.exit(1)
 
 # d is the number of devices per group, n is the number of groups, and byte is the size of the inputs (before encryption)
-d = int(sys.argv[1])
-n = int(sys.argv[2])
-byte= int(sys.argv[3])
+d = int(sys.argv[2])
+n = int(sys.argv[1])
+byte= 3
 
 # prime
 p=324618072743403458035340044772650132096881761
