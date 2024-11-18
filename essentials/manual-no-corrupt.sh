@@ -10,6 +10,12 @@ pkill -f agg.py
 pkill -f client.py
 pkill -f server.py
 
+if [ "$#" -lt 2 ]; then
+        echo "Usage: ./manual-no-corrupt.sh <n> <d>"
+        exit 1
+fi
+
+
 k=$1
 n=$k
 d=$2
