@@ -53,7 +53,7 @@ def send_sums(sums_first, sums_second, host='127.0.0.1', port=12346):
         #file = open("singleSum.csv","a")
         #file.write(str(singleSum) + "\n")
         #file.close()
-
+        print("The encrypted sums were sent to the main server.\n")
     except Exception as e:
         print(f"Error sending sums to main server: {e}")
     finally:
@@ -71,7 +71,7 @@ def compute_sums():
     sums_first = [[0 for _ in range(n)] for _ in range(d)]
     sums_second = [[0 for _ in range(n)] for _ in range(d)]
 
-    print("Computing sums:")  # Debug print
+    print("Computing encrypted sums.")  # Debug print
 
     start = time.time()
     for i in range(0, d):
@@ -158,9 +158,8 @@ def receive_h(host='0.0.0.0', port=12347):
     try:
         server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         server.bind((host, port))
-        server.settimeout(2)
         server.listen(1)  # Listen for one connection
-        print(f"Original server listening for h on {host}:{port}")
+        print(f"Aggregator listening for h on {host}:{port}")
 
         client_socket, addr = server.accept()
         print(f"Accepted connection from {addr}")
@@ -175,19 +174,8 @@ def receive_h(host='0.0.0.0', port=12347):
             rcv += len(data)
         # Deserialize h
         h = pickle.loads(h_serialized)
-        print("Received array h from the main server.")
+        print("Received array h containing a selection of one honest device per group from the main server.\n")
         return h
-    #try to delete this later
-    except socket.timeout:
-        print(snt, rcv)
-        file = open("bytesAgg.csv","a")
-        file.write(str(rcv)+","+str(snt) +"\n")
-        file.close()
-        print("timeout")
-        if client_socket:
-            client_socket.close()
-        server.close()
-        sys.exit(1)
     except Exception as e:
         print(f"Error receiving h: {e}")
     finally:
@@ -198,7 +186,7 @@ def receive_h(host='0.0.0.0', port=12347):
 
 # Compute the encrypted sum from only honest clients, given the set of honest clients h from the server
 def compute_honest_sum(h):
-    print("Computing encrypted honest sum.")
+    print("Computing encrypted honest sum using the received array h.")
     sumx = 0
     sumy = 0
     start = time.time()
@@ -228,7 +216,7 @@ def send_honest_sum(sumx, sumy, host='127.0.0.1', port=12346):
         honest_sums_serialized = pickle.dumps((sumx, sumy))
         client.sendall(honest_sums_serialized)
         snt += len(honest_sums_serialized)
-        print("Honest sums arrays sent to main server.")  # Debug print
+        print("Honest encrypted sum and checksum were sent to main server. This was the aggregator's final task.\n")  # Debug print
         
     except Exception as e:
         print(f"Error sending new arrays to main server: {e}")
@@ -281,6 +269,7 @@ def get_values():
     #file = open("singleSumTime.csv","a")
     #file.write(str(tii) +  "\n")
     #file.close()
+    print("Clients sent their encrypted and authenticated inputs to aggregator.\n")
     compute_sums()
 
 if __name__ == "__main__":

@@ -19,9 +19,18 @@ m=$(($l -1))
 echo "d: $d, n: $n"
 sum=0
 
+if [ "$d" -lt 3 ]; then
+        echo "IMPORTANT: d must be at least 3. Restart"
+        exit 1
+fi
+
+echo ""
+echo "Printing the correct input value for each group"
+
 for ((j=0;j<n;j++)); do
 	g=$(shuf -i 0-$m -n 1)
 	sum=$((sum + g))
+	echo "$g"
 	for ((i=0;i<d;i++)); do
 		hex=$(openssl rand -hex 18)
 		r1=$((0x${hex}))
@@ -54,6 +63,8 @@ for ((j=0;j<n;j++)); do
 	echo "" >> inputs.csv
 	echo "" >> checksums.csv
 done
+
+echo ""
 
 python server.py $d $n $byte
 

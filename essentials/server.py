@@ -22,7 +22,7 @@ total_clients = d * n
 
 # Function to handle receiving sums from the aggregator
 def receive_sums(host='0.0.0.0', port=12346):
-    print("Receiving sums from aggregator.")
+    print("Waiting for sums from aggregator.")
     global rcv
     try:
         server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -43,7 +43,6 @@ def receive_sums(host='0.0.0.0', port=12346):
             rcv += len(data)
         # Deserialize sums
         sums_first, sums_second = pickle.loads(sums_serialized)
-
         # Debug check
         #print("Received sums:")
         #print("Sum First:")
@@ -227,7 +226,8 @@ def decrypt_honest_sum(sumx, h, ks):
 if __name__ == "__main__":
     xs, ys = receive_sums()
     #print(type(xs[0][0]))
-
+    print("Sums received. Press enter to continue.")
+    input()
     # For prototyping, keys are in files.
     with open("ks.csv", newline='') as csvfile:
         reader = csv.reader(csvfile, delimiter=',')
@@ -240,14 +240,25 @@ if __name__ == "__main__":
 
     # Go through all algorithms to get the correct aggregation and localize the corrupted devices
     ms = compute_Ms(ks, xs, kprimes, ys)
+    print("All received sums were decrypted. Press enter to continue.")
+    input()
     e = find_honest_sum(ms)
+    print("A selection of one honest device per group was found. It is printed below, as an array indicating the index of the first honest device in each group")
+    print("Honest group of devices: ",e)
+    print("Press enter to continue")
+    input()
     c = find_corruptions(ms,e)
-    print("Honest group of devices: ",e) #debug
+    print("The corrupted devices were found. The following array shows 1 if the device is corrupted, and 0 if it is honest, in each group.")
     print("Corrupted devices: ",c)
+    print("Press enter to continue.")
+    input()
 
     #print(len(e))
     send_h(e)
+    print("The selection of honest devices was sent to the aggregator.")
     sumx,sumy = receive_honest_sum()
+    print("The encrypted honest sum was received from the aggregator. It will now be decrypted. Press enter to continue.")
+    input()
     start = time.time()
     sumh = decrypt_honest_sum(sumx, e, ks)
     if testing_checksum(sumh, sumy, e, kprimes):
@@ -263,4 +274,4 @@ if __name__ == "__main__":
     file = open("bytesServer.csv","a")
     file.write(str(rcv)+","+str(snt)+"\n")
     file.close()
-    print("Finished")
+    print("Aggregation finished.")

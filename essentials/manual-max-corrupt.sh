@@ -17,11 +17,21 @@ byte=3
 l=$((2 **($byte*8)))
 m=$(($l -1))
 echo "d: $d, n: $n"
+if [ "$d" -lt 3 ]; then
+        echo "IMPORTANT: d must be at least 3. Restart"
+        exit 1
+fi
+
 sum=0
+
+echo "Rows 0,1,2,..., d/2-1 have malicious inputs."
+echo ""
+echo "Printing the correct input value for each group"
 
 for ((j=0;j<n;j++)); do
 	f=$(shuf -i 0-$m -n 1)
 	sum=$((sum+f))
+	echo "$f"
 	for ((i=0;i<d;i++)); do
     		if ((i<d/2)); then
       			g=$(shuf -i 0-$m -n 1)
@@ -59,6 +69,8 @@ for ((j=0;j<n;j++)); do
 	echo "" >> inputs.csv
 	echo "" >> checksums.csv
 done
+
+echo ""
 
 python server.py $d $n $byte
 
